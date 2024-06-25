@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import operator
 import random
-import json
 
 import discord
 from redbot.core import Config, bank, commands
@@ -10,7 +9,7 @@ from redbot.core.utils.predicates import MessagePredicate
 
 
 class triviatest(commands.Cog):
-    __version__ = "0.3.0"
+    __version__ = "0.2.2"
     __author__ = "flare(flare#0001)"
 
     def format_help_for_context(self, ctx):
@@ -23,7 +22,6 @@ class triviatest(commands.Cog):
         self.config.register_guild(
             active=False,
             maths=True,
-            trivia=False,
             chance=1,
             interval=60,
             timestamp=None,
@@ -32,18 +30,14 @@ class triviatest(commands.Cog):
             channel=None,
         )
         self.cache = {}
-        self.trivia_questions = self.load_trivia_questions()
         asyncio.create_task(self.init_loop())
-
-    def load_trivia_questions(self):
-        with open('trivia_questions.json', 'r') as file:
-            return json.load(file)
 
     def random_calc(self):
         ops = {
             "+": operator.add,
             "-": operator.sub,
             "*": operator.mul,
+            #'/':operator.truediv
         }
         num1 = random.randint(0, 12)
         num2 = random.randint(1, 10)
@@ -51,13 +45,12 @@ class triviatest(commands.Cog):
         answer = ops.get(op)(num1, num2)
         return "What is {} {} {}?\n".format(num1, op, num2), answer
 
-    def random_trivia(self):
-        question = random.choice(self.trivia_questions)
-        return question['question'], question['answer']
-
     async def init_loop(self):
         await self.bot.wait_until_ready()
         await self.generate_cache()
+        # while True:
+        #     await asyncio.sleep(60)
+        # await self.save()
 
     def cog_unload(self):
         self.bg_config_loop.cancel()
@@ -94,27 +87,7 @@ class triviatest(commands.Cog):
                 channel = message.channel
         else:
             channel = message.channel
-        if self.cache[message.guild.id]["trivia"]:
-            question, answer = self.random_trivia()
-            msg = await channel.send(question)
-            try:
-                pred = MessagePredicate.equal_to(answer, channel=channel, user=None)
-                answer_msg: discord.Message = await self.bot.wait_for(
-                    "message", check=pred, timeout=30
-                )
-            except asyncio.TimeoutError:
-                await msg.edit(content="Time's up! No one got the correct answer.")
-                return
-            if pred.result:
-                creds = random.randint(
-                    self.cache[message.guild.id]["credits_min"],
-                    self.cache[message.guild.id]["credits_max"],
-                )
-                await msg.edit(
-                    content=f"Correct! {answer_msg.author.mention} got {creds} {await bank.get_currency_name(guild=message.guild)}!"
-                )
-                await bank.deposit_credits(answer_msg.author, creds)
-        elif self.cache[message.guild.id]["maths"]:
+        if self.cache[message.guild.id]["maths"]:
             string, answer = self.random_calc()
             msg = await channel.send(string)
             try:
@@ -125,7 +98,7 @@ class triviatest(commands.Cog):
             except asyncio.TimeoutError:
                 await msg.edit(content="Too slow!")
                 return
-            if pred.result:
+            if not pred.result:
                 creds = random.randint(
                     self.cache[message.guild.id]["credits_min"],
                     self.cache[message.guild.id]["credits_max"],
@@ -147,7 +120,7 @@ class triviatest(commands.Cog):
                 await msg.edit(content="Too slow!")
                 return
 
-            if pred.result:
+            if not pred.result:
                 creds = random.randint(
                     self.cache[message.guild.id]["credits_min"],
                     self.cache[message.guild.id]["credits_max"],
@@ -235,7 +208,7 @@ class triviatest(commands.Cog):
             return
         maxcredits = await self.config.guild(ctx.guild).credits_max()
         if maxcredits < min:
-            await ctx.send("Min must be less than max")
+            await ctx.send("Min must be less than min")
             return
         guild = ctx.guild
         await self.config.guild(guild).credits_min.set(min)
@@ -250,26 +223,10 @@ class triviatest(commands.Cog):
         guild = ctx.guild
         if toggle:
             await self.config.guild(guild).maths.set(True)
-            await self.config.guild(guild).trivia.set(False)
-            await ctx.send("Maths mode is now enabled. Trivia mode has been disabled.")
+            await ctx.send("Maths mode is now enabled")
         else:
             await self.config.guild(guild).maths.set(False)
-            await ctx.send("Maths mode is now disabled.")
-        await self.generate_cache()
-
-    @_triviatest.command(name="trivia")
-    async def _trivia(self, ctx, toggle: bool):
-        """
-        Toggle trivia mode
-        """
-        guild = ctx.guild
-        if toggle:
-            await self.config.guild(guild).trivia.set(True)
-            await self.config.guild(guild).maths.set(False)
-            await ctx.send("Trivia mode is now enabled. Maths mode has been disabled.")
-        else:
-            await self.config.guild(guild).trivia.set(False)
-            await ctx.send("Trivia mode is now disabled.")
+            await ctx.send("Maths mode is now disabled")
         await self.generate_cache()
 
     @_triviatest.command(name="channel")
