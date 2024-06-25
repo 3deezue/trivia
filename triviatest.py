@@ -9,7 +9,7 @@ from redbot.core import Config, bank, commands
 from redbot.core.utils.predicates import MessagePredicate
 
 
-class Cashdrop(commands.Cog):
+class triviatest(commands.Cog):
     __version__ = "0.3.0"
     __author__ = "flare(flare#0001)"
 
@@ -157,33 +157,33 @@ class Cashdrop(commands.Cog):
                 )
                 await bank.deposit_credits(pickup_msg.author, creds)
 
-    @commands.group(name="cashdrop", aliases=["cd"])
+    @commands.group(name="triviatest", aliases=["cd"])
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
-    async def _cashdrop(self, ctx):
+    async def _triviatest(self, ctx):
         """
-        Manage the cashdrop
+        Manage the triviatest
         """
 
-    @_cashdrop.command(name="toggle")
+    @_triviatest.command(name="toggle")
     async def _toggle(self, ctx):
         """
-        Toggle the cashdrop
+        Toggle the triviatest
         """
         guild = ctx.guild
         active = await self.config.guild(guild).active()
         if active:
             await self.config.guild(guild).active.set(False)
-            await ctx.send("Cashdrop is now disabled")
+            await ctx.send("triviatest is now disabled")
         else:
             await self.config.guild(guild).active.set(True)
-            await ctx.send("Cashdrop is now enabled")
+            await ctx.send("triviatest is now enabled")
         await self.generate_cache()
 
-    @_cashdrop.command(name="chance")
+    @_triviatest.command(name="chance")
     async def _chance(self, ctx, chance: int):
         """
-        Set the chance percent of the cashdrop
+        Set the chance percent of the triviatest
         """
         if chance < 0 or chance > 100:
             await ctx.send("Chance must be between 0 and 100")
@@ -193,10 +193,10 @@ class Cashdrop(commands.Cog):
         await ctx.send(f"Chance set to {chance}%")
         await self.generate_cache()
 
-    @_cashdrop.command(name="interval")
+    @_triviatest.command(name="interval")
     async def _interval(self, ctx, interval: int):
         """
-        Set the interval in seconds between cashdrops
+        Set the interval in seconds between triviatests
         """
         if interval < 0:
             await ctx.send("Interval must be greater than 0")
@@ -206,7 +206,7 @@ class Cashdrop(commands.Cog):
         await ctx.send(f"Interval set to {interval} seconds")
         await self.generate_cache()
 
-    @_cashdrop.command(name="max")
+    @_triviatest.command(name="max")
     async def _max(self, ctx, max: int):
         """
         Set the max credits
@@ -224,7 +224,7 @@ class Cashdrop(commands.Cog):
         await ctx.send(f"Max credits set to {max}")
         await self.generate_cache()
 
-    @_cashdrop.command(name="min")
+    @_triviatest.command(name="min")
     async def _min(self, ctx, min: int):
         """
         Set the min credits
@@ -242,7 +242,7 @@ class Cashdrop(commands.Cog):
         await ctx.send(f"Min credits set to {min}")
         await self.generate_cache()
 
-    @_cashdrop.command(name="maths")
+    @_triviatest.command(name="maths")
     async def _maths(self, ctx, toggle: bool):
         """
         Toggle maths mode
@@ -257,7 +257,7 @@ class Cashdrop(commands.Cog):
             await ctx.send("Maths mode is now disabled.")
         await self.generate_cache()
 
-    @_cashdrop.command(name="trivia")
+    @_triviatest.command(name="trivia")
     async def _trivia(self, ctx, toggle: bool):
         """
         Toggle trivia mode
@@ -272,10 +272,10 @@ class Cashdrop(commands.Cog):
             await ctx.send("Trivia mode is now disabled.")
         await self.generate_cache()
 
-    @_cashdrop.command(name="channel")
+    @_triviatest.command(name="channel")
     async def _channel(self, ctx, channel: discord.TextChannel):
         """
-        Set the channel for the cashdrop
+        Set the channel for the triviatest
         """
         guild = ctx.guild
         await self.config.guild(guild).channel.set(channel.id)
