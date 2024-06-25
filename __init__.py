@@ -1,4 +1,4 @@
-from .trivia import triviatest
+from .triviatest import triviatest
 
 
 async def setup(bot):
